@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi PWA con Sheets</title>
+    <link rel="manifest" href="data:application/manifest+json,{'name':'SheetsPWA','short_name':'PWA','start_url':'.','display':'standalone','background_color':'#ffffff'}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-5">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+        <h1 class="text-2xl font-bold mb-4 text-green-600">Directorio desde Sheets</h1>
+        <div id="datos" class="space-y-2">Cargando datos...</div>
+        <button onclick="cargarDatos()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded shadow">Actualizar</button>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwJDKqg__q1UK5_AoKPWmEGO0inAk4ZmJSrzWtP_3S1dwZzuS_QEls274ohbziDxoi9WA/exec";
+
+        async function cargarDatos() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const contenedor = document.getElementById('datos');
+                contenedor.innerHTML = data.map(user => `
+                    <div class="border-b py-2">
+                        <p class="font-semibold">${user.Nombre}</p>
+                        <p class="text-gray-500 text-sm">${user.Acceso}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('datos').innerText = "Error al cargar datos.";
+            }
+        }
+
+        // Cargar al iniciar
+        cargarDatos();
+
+        // Registrar Service Worker básico para ser PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript,self.addEventListener("fetch", (e) => {});');
+        }
+    </script>
+</body>
+</html>
