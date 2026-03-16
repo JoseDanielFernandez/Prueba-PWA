@@ -18,20 +18,38 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwJDKqg__q1UK5_AoKPWmEGO0inAk4ZmJSrzWtP_3S1dwZzuS_QEls274ohbziDxoi9WA/exec";
 
         async function cargarDatos() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const contenedor = document.getElementById('datos');
-                contenedor.innerHTML = data.map(user => `
-                    <div class="border-b py-2">
-                        <p class="font-semibold">${user.Nombre}</p>
-                        <p class="text-gray-500 text-sm">${user.Acceso}</p>
-                    </div>
-                `).join('');
-            } catch (error) {
-                document.getElementById('datos').innerText = "Error al cargar datos.";
-            }
+    const contenedor = document.getElementById('datos');
+    try {
+        // Añadimos parámetros para evitar que el navegador guarde una copia vieja (caché)
+        const response = await fetch(API_URL + "?cache=" + Date.now(), {
+            method: 'GET',
+            mode: 'cors',
+            redirect: 'follow'
+        });
+
+        if (!response.ok) throw new Error("Respuesta de red no ok");
+
+        const data = await response.json();
+        console.log("Datos recibidos:", data); // Esto aparecerá en la consola (F12)
+
+        if (data.length === 0) {
+            contenedor.innerText = "La hoja está vacía.";
+            return;
         }
+
+        contenedor.innerHTML = data.map(user => `
+            <div class="border-b py-2">
+                <p class="font-semibold">${user.Nombre || 'Sin nombre'}</p>
+                <p class="text-gray-500 text-sm">${user.Acceso || 'Sin acceso'}</p>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error("Detalle del error:", error);
+        contenedor.innerHTML = `<p class="text-red-500 font-bold">Error: ${error.message}</p>
+                                <p class="text-xs text-gray-400">Revisa la consola (F12) para más detalles.</p>`;
+    }
+}
 
         // Cargar al iniciar
         cargarDatos();
